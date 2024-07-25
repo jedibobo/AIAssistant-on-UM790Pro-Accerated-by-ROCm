@@ -14,13 +14,15 @@ For AMD Pervasive Contest, using ROCm to support and accelerate LLMs running on 
       - [Build rocblas for gfx1103](#build-rocblas-for-gfx1103)
       - [Install LM-studio](#install-lm-studio)
       - [Test(llama3.1-8B)](#testllama31-8b)
-  - [Frontend](#frontend)
+  - [Frontend and Usages of LLM Server](#frontend-and-usages-of-llm-server)
     - [Local RAG](#local-rag)
       - [Setup Up AnythingLLM](#setup-up-anythingllm)
       - [test with Q\&A with FlashAttention 1,2,3 paper pdf](#test-with-qa-with-flashattention-123-paper-pdf)
     - [Web browsing RAG](#web-browsing-rag)
-    - [GraphRAG](#graphrag)
-      - [Update Settings to support local LLMs](#update-settings-to-support-local-llms)
+    - [GraphRAG on local LLMs](#graphrag-on-local-llms)
+      - [Setup GraphRAG environment](#setup-graphrag-environment)
+      - [Run example](#run-example)
+      - [Update Settings to use local LLMs](#update-settings-to-use-local-llms)
 
 ## Task Brief
 The task is to support and accelerate LLMs running on UM790Pro AIPC, also enables local RAG, which helps users to work efficiently and privately.
@@ -28,9 +30,9 @@ The task is to support and accelerate LLMs running on UM790Pro AIPC, also enable
 ### Choice of Acceleration Hardware
 **Why I choose GPU instead of NPU for acceleration?** 
 
-This UM790Pro AIPC contains accelerators both GPU and NPU. Here I want to explain why at present it is a better choice to use GPU for acceleration. I will explain in terms of Computing Capabilities and Usability(community supports).
+The UM790Pro AIPC features both GPU and NPU accelerators. Here, I will explain why, at present, using the GPU for acceleration is a better choice, focusing on computing capabilities and usability, including community support.
 
-**Note: As known to all, LLM inference tasks are more memory bound than CNN type models. The following Computing Capabilities may not directly show the performance of a certain type of Accelerator.**
+**As is widely recognized, LLM inference tasks are more memory-bound compared to CNN-type models. Therefore, the computing capabilities of a certain type of accelerator may not directly correlate with inference performance.**
 
 #### GPU
 ***Computing Capabilities***
@@ -39,8 +41,8 @@ Running at 2.9GHz, the processor can deliver [4.51 TFLOPS](https://www.cpu-monke
 
 ***Usability***
 
-Granted with more support with OpenCL and **ROCm
-**(not fully supported officially by AMD, we' ll solve this later). 
+Granted with more support from OpenCL and ROCm (not fully supported officially by AMD, but we will address this later).
+
 ## NPU 
 ***Computing Capabilities***
 
@@ -48,16 +50,16 @@ NPU in UM790Pro(7940HS) is capable of Up to **10 TOPS** in [AMD's documentation]
 
 ![img](github_images/NPU-Performance.jpg)
 
-Test results shows that longer token length shows lower NPU utilization rate and more volatile. And command center shows 70% of NPU utilization.
+Test results indicate that longer token lengths result in lower and more volatile NPU utilization rates. The command center shows an average NPU utilization of 70%.
 
 ![img](github_images/NPU-Utilization.jpg)
 ![img](github_images/NPU-Utilization-long.jpg)
 
-In the above pictures, the first tests from 4 to 256 tokens, the second tests 512 to 4096 tokens. Both increases with a factor of 2.
+In the above pictures, the first test ranges from 4 to 256 tokens, while the second test ranges from 512 to 4096 tokens, both increasing by a factor of 2.
 
 ***Usability***
 
-However, the NPU is not as widely supported as the GPU in terms of **Ops** and **Quantization** by communities. After I tried [examples](https://github.com/amd/RyzenAI-SW) of NPU, I found it **less flexible** and need **more time for adaptation** for each LLM model.
+However, the NPU is not as widely supported as the GPU in terms of **Ops** and **Quantization** by the community. After I tried [examples](https://github.com/amd/RyzenAI-SW) for the NPU, I found it to be **less flexible** and requiring **more time for adaptation** for each LLM model.
 
 ## Build LLM Inference Server
 ### Add gfx1103 support for LM-Studio with ROCm
@@ -68,7 +70,7 @@ And you can get the following files:
 ![img](github_images/rocblas-files.jpg)
 
 #### Install LM-studio
-VERY IMPORTANT: You need to install windows version and get ROCm extension instead of ROCm preview from lmstudio.ai.
+VERY IMPORTANT: You need to install windows version and get ROCm extension instead of ROCm preview from lmstudio.ai, which in my tries exposes few unsolved problems. Then install additional support for ROCm.
 
 ```bash
 LM-Studio-0.2.28-Setup 
@@ -129,8 +131,7 @@ Besides, replace old rocblas.dll(C:\Users\15824\.cache\lm-studio\extensions\back
 Then, download ollama ollama-windows-amd64.zip from [link](https://github.com/likelovewant/ollama-for-amd/releases). And replace the old llama.dll(C:\Users\15824\\.cache\lm-studio\extensions\backends\win-llama-rocm-lm) with Ollama's llama.dll(in ollama-windows-amd64\ollama_runners\rocm_v5.7).
 
 #### Test(llama3.1-8B)
-Test with newest model: Llama3.1-8B with 8-bit precision.
-When you load model, you can the same as the picture below which indicates that the model is loaded successfully with llama.cpp support on ROCm backend.
+Test with the newest model: Llama3.1-8B with 8-bit precision. When you load the model, you should see the same output as in the picture below, indicating that the model has been successfully loaded with llama.cpp support on the ROCm backend.
 ![img](github_images/load-model.jpg)
 
 Ask a few questions:
@@ -151,8 +152,7 @@ Llama2 7B chat 4bit
 | Token/s | 3.8 | 8.22 | 14.50 |
 
 
-## Frontend
-
+## Frontend and Usages of LLM Server
 ### Local RAG
 #### Setup Up AnythingLLM
 First, Downliad anythingllm desktop.
@@ -189,5 +189,51 @@ and ask questions. You can see the results below:
 ![img](github_images/anythingllm-agent-skills-websearch-3.jpg)
 The output is different from local vector base RAG, and it will be much slower, for it precesses the web search in real time.
 
-### GraphRAG
-#### Update Settings to support local LLMs
+### GraphRAG on local LLMs
+We use the [example](https://microsoft.github.io/graphrag/posts/get_started/) given by Microsoft.
+#### Setup GraphRAG environment
+Prepare the conda env in the [getting start page](https://microsoft.github.io/graphrag/posts/get_started/).
+
+
+
+#### Run example
+First, put book.txt from example into "input" folder.
+Second, run init:
+```bash
+> python -m graphrag.index --init --root ./ragtest
+```
+
+#### Update Settings to use local LLMs
+```yaml
+encoding_model: cl100k_base
+skip_workflows: []
+llm:
+  api_key: lm-studio #${GRAPHRAG_API_KEY}
+  type: openai_chat # or azure_openai_chat
+  model: Meta-Llama-3.1-8B-Instruct-GGUF 
+  model_supports_json: true # recommended if this is
+  api_base: http://localhost:1234/v1 #https://
+  tokens_per_minute: 10_000 # set a leaky bucket throttle
+  requests_per_minute: 10 #_000 # set a leaky bucket 
+  sleep_on_rate_limit_recommendation: true # whether to 
+
+embeddings:
+  ## parallelization: override the global parallelization settings for embeddings
+  async_mode: threaded # or asyncio
+  llm:
+    api_key: lm-studio #${GRAPHRAG_API_KEY}
+    type: openai_embedding # or azure_openai_embedding
+    model: nomic-ai/nomic-embed-text-v1.5-GGUF
+    api_base: http://localhost:1234/v1
+    tokens_per_minute: 10_000  throttle
+    requests_per_minute: 10 
+```
+
+Then, run the following command to index the book.txt:
+```bash
+> python -m graphrag.index --root ./ragtest
+```
+
+The cmd should output like this:
+![img](github_images/graphrag.jpg)
+The background is the output of LM-studio inference server.
