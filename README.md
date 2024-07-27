@@ -237,3 +237,5 @@ Then, run the following command to index the book.txt:
 The cmd should output like this:
 ![img](github_images/graphrag.jpg)
 The background is the output of LM-studio inference server.
+
+Local RAG with GraphRAG results are in [ragtest]((./ragtest/)) and [ragtest-long]((./ragtest-long/)) foler. You can see the results in responding log files.
