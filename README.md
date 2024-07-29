@@ -52,8 +52,8 @@ NPU in UM790Pro(7940HS) is capable of Up to **10 TOPS** in [AMD's documentation]
 
 Test results indicate that longer token lengths result in lower and more volatile NPU utilization rates. The command center shows an average NPU utilization of 70%.
 
-![img](github_images/NPU-Utilization.jpg)
-![img](github_images/NPU-Utilization-long.jpg)
+![img](github_images/NPU-utilization.jpg)
+![img](github_images/NPU-utilization-long.jpg)
 
 In the above pictures, the first test ranges from 4 to 256 tokens, while the second test ranges from 512 to 4096 tokens, both increasing by a factor of 2.
 
